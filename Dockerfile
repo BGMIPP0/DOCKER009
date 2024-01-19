@@ -1,18 +1,23 @@
-# Use the official Ubuntu 20.04 image as the base image
 FROM ubuntu:20.04
+LABEL maintainer="wingnut0310 <wingnut0310@gmail.com>"
 
-# Install necessary dependencies
-RUN apt-get update && \
-    apt-get install -y wget curl git build-essential sudo
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV GOTTY_TAG_VER v1.0.1
 
-# Download and install gotty-remake
-RUN wget https://github.com/yudai/gotty/releases/download/v2.0.0/gotty_linux_amd64.tar.gz && \
-    tar -xvf gotty_linux_amd64.tar.gz && \
-    mv gotty /usr/local/bin && \
-    rm gotty_linux_amd64.tar.gz
+RUN apt-get -y update && \
+    apt-get install -y curl && \
+    curl -sLk https://github.com/yudai/gotty/releases/download/${GOTTY_TAG_VER}/gotty_linux_amd64.tar.gz \
+    | tar xzC /usr/local/bin && \
+    apt-get purge --auto-remove -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists*
 
-# Expose the default gotty port
+
+COPY /run_gotty.sh /run_gotty.sh
+
+RUN chmod 744 /run_gotty.sh
+
 EXPOSE 8080
 
-# Set up a default command to run gotty with bash
-CMD ["gotty", "bash"]
+CMD ["/bin/bash","/run_gotty.sh"]
